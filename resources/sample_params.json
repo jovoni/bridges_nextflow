@@ -1,18 +1,3 @@
 {
-  "samples": [
-    {
-      "sample_id": "SA1093",
-      "h5ad_path": "~/Desktop/HLAMP/processed_files/Reads/SA1093/sample_all_filtered.h5ad",
-      "cell_quality": 0.75,
-      "k_jitter_fix": 0,
-      "p_cut": 0.01
-    },
-    {
-      "sample_id": "SA1162",
-      "h5ad_path": "~/Desktop/HLAMP/processed_files/Reads/SA1162/sample_all_filtered.h5ad",
-      "cell_quality": 0.75,
-      "k_jitter_fix": 0,
-      "p_cut": 0.01
-    }
-  ]
+  
 }
