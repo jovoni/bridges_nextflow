@@ -1,73 +1,83 @@
 # BRIDGES Nextflow Pipeline
 
-This pipeline supports multiple input types for BRIDGES analysis, all using a common `run_and_plot` subworkflow.
+This pipeline supports BRIDGES analysis from multiple input types using a unified input structure and dedicated workflows for each data type.
 
-## Supported Input Types
+## 📦 Supported Input Types
+
+The pipeline can process:
 
 ### 1. H5AD Files (AnnData format)
-For single-cell data stored in H5AD format:
+For single-cell data stored in `.h5ad` format:
 
 ```bash
-nextflow run main_new.nf --input_type h5ad --input_json resources/sample_params.json
+nextflow run main.nf --input_json resources/sample_params.json
 ```
 
-**Required parameters in JSON:**
-- `sample_id`: Sample identifier
-- `h5ad_path`: Path to H5AD file
+**Required fields in JSON:**
+- `sample_id`: Unique sample name
+- `input_type`: Must be `"h5ad"`
+- `input_path`: Path to `.h5ad` file
 - `cell_quality`: Cell quality threshold (0-1)
-- `k_jitter_fix`: K jitter fix parameter
-- `p_cut`: P-value cutoff for BFB detection
+- `k_jitter_fix`: Jitter smoothing parameter
+- `p_cut`: P-value threshold for BFB detection
+
+---
 
 ### 2. HMMcopy Results
-For preprocessed HMMcopy results:
+For bulk or single-cell HMMcopy output:
 
 ```bash
-nextflow run main_new.nf --input_type hmmcopy --input_json resources/sample_params_hmmcopy.json
+nextflow run main.nf --input_json resources/sample_params.json
 ```
 
-**Required parameters in JSON:**
-- `sample_id`: Sample identifier
-- `hmmcopy_path`: Path to HMMcopy results CSV file
-- `annotation_path`: Path to annotation CSV file
-- `cell_quality`: Cell quality threshold (0-1)
-- `k_jitter_fix`: K jitter fix parameter
-- `p_cut`: P-value cutoff for BFB detection
+**Required fields in JSON:**
+- `sample_id`: Unique sample name
+- `input_type`: Must be `"hmmcopy"`
+- `input_path`: Path to HMMcopy `reads.csv.gz`
+- `annotation_path`: Path to metrics/annotation CSV
+- `cell_quality`: Cell quality threshold
+- `k_jitter_fix`: Jitter smoothing parameter
+- `p_cut`: P-value threshold
+
+---
 
 ### 3. Signals Results
-For allele-specific signals data:
+For allele-specific CNA signals:
 
 ```bash
-nextflow run main_new.nf --input_type signals --input_json resources/sample_params_signals.json
+nextflow run main.nf --input_json resources/sample_params.json
 ```
 
-**Required parameters in JSON:**
-- `sample_id`: Sample identifier
-- `signals_path`: Path to signals results CSV file
-- `annotation_path`: Path to annotation CSV file
-- `cell_quality`: Cell quality threshold (0-1)
-- `k_jitter_fix`: K jitter fix parameter
-- `p_cut`: P-value cutoff for BFB detection
+**Required fields in JSON:**
+- `sample_id`: Unique sample name
+- `input_type`: Must be `"signals"`
+- `input_path`: Path to signals results CSV
+- `annotation_path`: Path to metrics CSV
+- `cell_quality`: Cell quality threshold
+- `k_jitter_fix`: Jitter smoothing parameter
+- `p_cut`: P-value threshold
 
-## Pipeline Architecture
+---
 
-The modular pipeline consists of:
+## ⚙️ Pipeline Architecture
 
-1. **Input-specific preparation modules:**
-   - `PREPARE_H5AD`: Processes H5AD files
-   - `PREPARE_HMMCOPY`: Processes HMMcopy results
-   - `PREPARE_SIGNALS`: Processes signals results
+The modular pipeline includes:
 
-2. **Common analysis subworkflow:**
-   - `RUN_AND_PLOT`: Runs BRIDGES analysis and generates plots
+1. **Input-specific preparation**
+   - `PREPARE_H5AD`, `PREPARE_HMMCOPY`, `PREPARE_SIGNALS`
 
-3. **Input-specific main workflows:**
-   - `H5AD_MAIN`: Complete workflow for H5AD inputs
-   - `HMMCOPY_MAIN`: Complete workflow for HMMcopy inputs
-   - `SIGNALS_MAIN`: Complete workflow for signals inputs
+2. **Analysis & Plotting**
+   - `RUN_AND_PLOT`: common subworkflow across types
 
-## Output Structure
+3. **Main routing logic**
+   - `H5AD_MAIN`, `HMMCOPY_MAIN`, `SIGNALS_MAIN`
 
-All workflows produce the same output structure:
+---
+
+## 📁 Output Structure
+
+All samples produce the same output structure inside the results directory:
+
 ```
 results/
 └── [sample_id]/
@@ -76,25 +86,82 @@ results/
     └── bfb_detection_report.pdf
 ```
 
-## Configuration
-
-The pipeline uses the same `nextflow.config` as the original pipeline. You can customize:
-- Container/conda environments
-- Resource allocation
-- Output directories
-
-## Example Usage
+You can customize the base output directory with:
 
 ```bash
-# Run with H5AD input (default)
-nextflow run main_new.nf
-
-# Run with HMMcopy results
-nextflow run main_new.nf --input_type hmmcopy
-
-# Run with custom input file
-nextflow run main_new.nf --input_type signals --input_json my_signals_params.json
-
-# Specify custom results directory
-nextflow run main_new.nf --results_base_dir /path/to/results
+--results_base_dir /your/output/path
 ```
+
+---
+
+## 🧪 Example Usage
+
+```bash
+# Default run (will use resources/sample_params.json)
+nextflow run main.nf
+
+# Use custom input file
+nextflow run main.nf --input_json my_custom_inputs.json
+
+# Set custom output folder
+nextflow run main.nf --results_base_dir /your/results/dir
+```
+
+---
+
+## 📦 Requirements
+
+To run this pipeline, you’ll need the following software installed:
+
+### R Dependencies
+
+- R version ≥ 4.1
+- `bridges`: the core R package for phylogenetic inference and BFB detection  
+  Install with:
+
+  ```r
+  install.packages("devtools")  # if not already installed
+  devtools::install_github("jovoni/bridges")
+  ```
+
+- `anndata`: used to read `.h5ad` input files  
+  This package requires a working Python installation via `reticulate`. You can install it in R with:
+
+  ```r
+  reticulate::py_install("anndata")
+  ```
+
+- Other R dependencies (installed automatically with `bridges`):
+  - `ComplexHeatmap`
+  - `ggtree`
+
+### Python Dependencies (Optional)
+
+If you're working with `.h5ad` inputs:
+- Python ≥ 3.8
+- `anndata` Python module (installed via `reticulate` or with pip):
+
+  ```bash
+  pip install anndata
+  ```
+
+---
+
+## 🔧 Optional Configuration
+
+You can use a `nextflow.config` file to set:
+- Execution profiles (local, slurm, docker, etc.)
+- Resource requirements (CPUs, memory)
+- Container environments for reproducibility (e.g. `singularity` or `conda`)
+
+---
+
+## 🧪 Example JSON
+
+An example JSON input is available at:
+
+```
+resources/sample_params.json
+```
+
+This file lists all samples and their metadata, allowing you to batch process mixed input types.

@@ -5,7 +5,7 @@ process PREPARE_HMMCOPY {
     conda 'r-base r-dplyr r-readr'
     
     input:
-    tuple val(sample_id), val(hmmcopy_path), val(annotation_path), val(cell_quality), val(k_jitter_fix), val(p_cut)
+    tuple val(sample_id), val(input_path), val(annotation_path), val(cell_quality), val(k_jitter_fix), val(p_cut)
 
     output:
     tuple val(sample_id), path("${sample_id}_cna_data.rds"), val(k_jitter_fix), val(p_cut), emit: cna_data
@@ -19,7 +19,7 @@ process PREPARE_HMMCOPY {
     
     # Prepare CNA data from HMMcopy results
     cna_data <- process_hmmcopy(
-        hmmcopy_results_csv = "${hmmcopy_path}",
+        hmmcopy_results_csv = "${input_path}",
         annotation_metrics_csv = "${annotation_path}",
         cell_quality = ${cell_quality}
     )

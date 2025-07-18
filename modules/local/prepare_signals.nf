@@ -5,7 +5,7 @@ process PREPARE_SIGNALS {
     conda 'r-base r-dplyr r-readr'
     
     input:
-    tuple val(sample_id), val(signals_path), val(annotation_path), val(cell_quality), val(k_jitter_fix), val(p_cut)
+    tuple val(sample_id), val(input_path), val(annotation_path), val(cell_quality), val(k_jitter_fix), val(p_cut)
 
     output:
     tuple val(sample_id), path("${sample_id}_cna_data.rds"), val(k_jitter_fix), val(p_cut), emit: cna_data
@@ -19,7 +19,7 @@ process PREPARE_SIGNALS {
     
     # Prepare CNA data from signals results
     cna_data <- process_signals(
-        signals_results = "${signals_path}",
+        signals_results = "${input_path}",
         annotation_metrics_csv = "${annotation_path}",
         cell_quality = ${cell_quality}
     )

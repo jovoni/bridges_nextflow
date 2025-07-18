@@ -7,7 +7,6 @@ import groovy.json.JsonSlurper
 params.results_base_dir = "${launchDir}/results"
 
 // Parameters for different input types
-params.input_type = 'hmmcopy' // Options: 'h5ad', 'hmmcopy', 'signals'
 params.input_json = null
 
 // Include the different main workflows
@@ -16,50 +15,52 @@ include { HMMCOPY_MAIN } from './workflows/hmmcopy_main'
 include { SIGNALS_MAIN } from './workflows/signals_main'
 
 workflow {
-    
-    // Determine input file
+
     def input_file = params.input_json ?: "resources/sample_params.json"
     def input_json = file(input_file)
-    
+
     if (!input_json.exists()) {
         error "Input JSON file not found: ${input_file}"
     }
-    
+
     def json = new JsonSlurper().parseText(input_json.text)
     def params_list = json.samples
 
-    // Route to appropriate workflow based on input type
-    if (params.input_type == 'h5ad') {
+    // Filter and route samples by input_type
+    def h5ad_samples = params_list.findAll { it.input_type == 'h5ad' }
+    def hmmcopy_samples = params_list.findAll { it.input_type == 'hmmcopy' }
+    def signals_samples = params_list.findAll { it.input_type == 'signals' }
+
+    if (!h5ad_samples.isEmpty()) {
         Channel
-            .fromList(params_list)
+            .fromList(h5ad_samples)
             .map { p ->
-                tuple(p.sample_id, p.h5ad_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
+                tuple(p.sample_id, p.input_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
             }
-            .set { input_ch }
-        
-        H5AD_MAIN(input_ch)
-        
-    } else if (params.input_type == 'hmmcopy') {
+            .set { h5ad_ch }
+
+        H5AD_MAIN(h5ad_ch)
+    }
+
+    if (!hmmcopy_samples.isEmpty()) {
         Channel
-            .fromList(params_list)
+            .fromList(hmmcopy_samples)
             .map { p ->
-                tuple(p.sample_id, p.hmmcopy_path, p.annotation_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
+                tuple(p.sample_id, p.input_path, p.annotation_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
             }
-            .set { input_ch }
-        
-        HMMCOPY_MAIN(input_ch)
-        
-    } else if (params.input_type == 'signals') {
+            .set { hmmcopy_ch }
+
+        HMMCOPY_MAIN(hmmcopy_ch)
+    }
+
+    if (!signals_samples.isEmpty()) {
         Channel
-            .fromList(params_list)
+            .fromList(signals_samples)
             .map { p ->
-                tuple(p.sample_id, p.signals_path, p.annotation_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
+                tuple(p.sample_id, p.input_path, p.annotation_path, p.cell_quality, p.k_jitter_fix, p.p_cut)
             }
-            .set { input_ch }
-        
-        SIGNALS_MAIN(input_ch)
-        
-    } else {
-        error "Invalid input_type: ${params.input_type}. Must be one of: h5ad, hmmcopy, signals"
+            .set { signals_ch }
+
+        SIGNALS_MAIN(signals_ch)
     }
 }

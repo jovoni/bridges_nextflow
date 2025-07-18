@@ -1,3 +1,31 @@
 {
-  
+ "samples": [
+    {
+      "sample_id": "hmmcopy_sample",
+      "input_type": "hmmcopy",
+      "input_path": "path_to_hmmcopy_reads.csv.gz",
+      "annotation_path": "path_to_hmmcopy_metrics.csv.gz",
+      "cell_quality": 0.75,
+      "k_jitter_fix": 2,
+      "p_cut": 0.01
+    },
+    {
+      "sample_id": "signals_sample",
+      "input_type": "signals",
+      "input_path": "path_to_hscn.csv.gz",
+      "annotation_path": "path_to_metrics.csv.gz",
+      "cell_quality": 0.75,
+      "k_jitter_fix": 5,
+      "p_cut": 0.01
+    },
+    {
+      "sample_id": "h5ad_sample",
+      "input_type": "h5ad",
+      "input_path": "path_to_h5ad_file.h5ad",
+      "annotation_path": null,
+      "cell_quality": 0.75,
+      "k_jitter_fix": 0,
+      "p_cut": 0.01
+    }
+  ] 
 }
