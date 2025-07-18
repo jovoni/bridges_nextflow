@@ -59,21 +59,6 @@ nextflow run main.nf --input_json resources/sample_params.json
 
 ---
 
-## ⚙️ Pipeline Architecture
-
-The modular pipeline includes:
-
-1. **Input-specific preparation**
-   - `PREPARE_H5AD`, `PREPARE_HMMCOPY`, `PREPARE_SIGNALS`
-
-2. **Analysis & Plotting**
-   - `RUN_AND_PLOT`: common subworkflow across types
-
-3. **Main routing logic**
-   - `H5AD_MAIN`, `HMMCOPY_MAIN`, `SIGNALS_MAIN`
-
----
-
 ## 📁 Output Structure
 
 All samples produce the same output structure inside the results directory:
